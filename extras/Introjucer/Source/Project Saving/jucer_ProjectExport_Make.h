@@ -82,13 +82,13 @@ protected:
             setValueIfVoid (getLibrarySearchPathValue(), "/usr/X11R6/lib/");
         }
 
-        Value getArchitectureType()                 { return getValue (Ids::linuxArchitecture); }
-        String getArchitectureTypeString() const    { return config [Ids::linuxArchitecture]; }
+        Value getArchitectureType()             { return getValue (Ids::linuxArchitecture); }
+        var getArchitectureTypeVar() const      { return config [Ids::linuxArchitecture]; }
 
         void createConfigProperties (PropertyListBuilder& props) override
         {
-            static const char* const archNames[] = { "(Default)", "32-bit (-m32)", "64-bit (-m64)", "ARM v6", "ARM v7" };
-            const var archFlags[] = { var(), "-m32", "-m64", "-march=armv6", "-march=armv7" };
+            static const char* const archNames[] = { "(Default)", "<None>",       "32-bit (-m32)", "64-bit (-m64)", "ARM v6",       "ARM v7" };
+            const var archFlags[]                = { var(),       var (String()), "-m32",         "-m64",           "-march=armv6", "-march=armv7" };
 
             props.add (new ChoicePropertyComponent (getArchitectureType(), "Architecture",
                                                     StringArray (archNames, numElementsInArray (archNames)),
@@ -151,7 +151,7 @@ private:
 
     void writeCppFlags (OutputStream& out, const BuildConfiguration& config) const
     {
-        out << "  CPPFLAGS := $(DEPFLAGS)";
+        out << "  CPPFLAGS := $(DEPFLAGS) -std=c++11";
         writeDefineFlags (out, config);
         writeHeaderPathFlags (out, config);
         out << newLine;
@@ -311,8 +311,8 @@ private:
                     << ": " << escapeSpaces (files.getReference(i).toUnixStyle()) << newLine
                     << "\t-@mkdir -p $(OBJDIR)" << newLine
                     << "\t@echo \"Compiling " << files.getReference(i).getFileName() << "\"" << newLine
-                    << (files.getReference(i).hasFileExtension (".c") ? "\t@$(CC) $(CFLAGS) -o \"$@\" -c \"$<\""
-                                                                      : "\t@$(CXX) $(CXXFLAGS) -o \"$@\" -c \"$<\"")
+                    << (files.getReference(i).hasFileExtension ("c;s;S") ? "\t@$(CC) $(CFLAGS) -o \"$@\" -c \"$<\""
+                                                                         : "\t@$(CXX) $(CXXFLAGS) -o \"$@\" -c \"$<\"")
                     << newLine << newLine;
             }
         }
@@ -323,8 +323,8 @@ private:
     String getArchFlags (const BuildConfiguration& config) const
     {
         if (const MakeBuildConfiguration* makeConfig = dynamic_cast<const MakeBuildConfiguration*> (&config))
-            if (makeConfig->getArchitectureTypeString().isNotEmpty())
-                return makeConfig->getArchitectureTypeString();
+            if (! makeConfig->getArchitectureTypeVar().isVoid())
+                return makeConfig->getArchitectureTypeVar();
 
         return "-march=native";
     }

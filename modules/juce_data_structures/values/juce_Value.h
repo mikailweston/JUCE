@@ -217,10 +217,15 @@ private:
     ListenerList<Listener> listeners;
 
     void callListeners();
+    void removeFromListenerList();
 
     // This is disallowed to avoid confusion about whether it should
     // do a by-value or by-reference copy.
-    Value& operator= (const Value&);
+    Value& operator= (const Value&) JUCE_DELETED_FUNCTION;
+
+    // This declaration prevents accidental construction from an integer of 0,
+    // which is possible in some compilers via an implicit cast to a pointer.
+    explicit Value (void*) JUCE_DELETED_FUNCTION;
 };
 
 /** Writes a Value to an OutputStream as a UTF8 string. */

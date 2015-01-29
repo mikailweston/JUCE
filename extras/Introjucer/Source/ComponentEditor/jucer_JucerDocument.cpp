@@ -24,7 +24,7 @@
 
 #include "../jucer_Headers.h"
 #include "../Application/jucer_Application.h"
-#include "../Project/jucer_NewFileWizard.h"
+#include "../Wizards/jucer_NewFileWizard.h"
 #include "jucer_JucerDocument.h"
 #include "jucer_ObjectTypes.h"
 #include "ui/jucer_JucerDocumentEditor.h"
@@ -432,7 +432,8 @@ void JucerDocument::fillInGeneratedCode (GeneratedCode& code) const
     code.getCallbackCode (String::empty, "void", "paint (Graphics& g)", false)
         << "//[UserPrePaint] Add your own custom painting code here..\n//[/UserPrePaint]\n\n";
 
-    code.getCallbackCode (String::empty, "void", "resized()", false);
+    code.getCallbackCode (String::empty, "void", "resized()", false)
+        << "//[UserPreResize] Add your own custom resize code here..\n//[/UserPreResize]\n\n";
 
     if (ComponentLayout* l = getComponentLayout())
         l->fillInGeneratedCode (code);
